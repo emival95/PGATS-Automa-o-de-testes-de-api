@@ -1,9 +1,9 @@
-const { users } = require('../model/userModel');
-const { transfers } = require('../model/transferModel');
+const userRepo = require('../repository/userRepository');
+const transferRepo = require('../repository/transferRepository');
 
 function transfer({ from, to, value }) {
-  const sender = users.find(u => u.username === from);
-  const recipient = users.find(u => u.username === to);
+  const sender = userRepo.findUser(from);
+  const recipient = userRepo.findUser(to);
   if (!sender || !recipient) throw new Error('Usuário não encontrado');
   if (sender.saldo < value) throw new Error('Saldo insuficiente');
   const isFavorecido = sender.favorecidos.includes(to);
@@ -11,12 +11,12 @@ function transfer({ from, to, value }) {
   sender.saldo -= value;
   recipient.saldo += value;
   const transferObj = { from, to, value, date: new Date() };
-  transfers.push(transferObj);
+  transferRepo.addTransfer(transferObj);
   return transferObj;
 }
 
 function getTransfers() {
-  return transfers;
+  return transferRepo.getAllTransfers();
 }
 
 module.exports = { transfer, getTransfers };

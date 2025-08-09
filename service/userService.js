@@ -1,26 +1,22 @@
-const { users } = require('../model/userModel');
+const userRepo = require('../repository/userRepository');
 
 function registerUser({ username, password, favorecidos = [] }) {
-  if (users.find(u => u.username === username)) {
+  if (userRepo.findUser(username)) {
     throw new Error('Usuário já existe');
   }
   const user = { username, password, favorecidos, saldo: 10000 };
-  users.push(user);
+  userRepo.addUser(user);
   return user;
 }
 
 function loginUser({ username, password }) {
-  const user = users.find(u => u.username === username && u.password === password);
-  if (!user) throw new Error('Credenciais inválidas');
+  const user = userRepo.findUser(username);
+  if (!user || user.password !== password) throw new Error('Credenciais inválidas');
   return user;
 }
 
 function getUsers() {
-  return users;
+  return userRepo.getAllUsers();
 }
 
-function getUser(username) {
-  return users.find(u => u.username === username);
-}
-
-module.exports = { registerUser, loginUser, getUsers, getUser };
+module.exports = { registerUser, loginUser, getUsers };
