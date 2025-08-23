@@ -1,22 +1,33 @@
-const userRepo = require('../repository/userRepository');
+const { users } = require('../model/userModel');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const SECRET = 'sua_chave_secreta';
+
+function findUserByUsername(username) {
+  return users.find(u => u.username === username);
+}
 
 function registerUser({ username, password, favorecidos = [] }) {
-  if (userRepo.findUser(username)) {
+  if (findUserByUsername(username)) {
     throw new Error('Usuário já existe');
   }
-  const user = { username, password, favorecidos, saldo: 10000 };
-  userRepo.addUser(user);
-  return user;
+  const hashedPassword = bcrypt.hashSync(password, 8);
+  const user = { username, password: hashedPassword, favorecidos, saldo: 10000 };
+  users.push(user);
+  return { username, favorecidos, saldo: user.saldo };
 }
 
 function loginUser({ username, password }) {
-  const user = userRepo.findUser(username);
-  if (!user || user.password !== password) throw new Error('Credenciais inválidas');
-  return user;
+  const user = findUserByUsername(username);
+  if (!user) throw new Error('Usuário não encontrado');
+  if (!bcrypt.compareSync(password, user.password)) throw new Error('Senha inválida');
+  // Gera o token JWT
+  const token = jwt.sign({ username }, SECRET, { expiresIn: '1h' });
+  return { username: user.username, favorecidos: user.favorecidos, saldo: user.saldo, token };
 }
 
-function getUsers() {
-  return userRepo.getAllUsers();
+function listUsers() {
+  return users.map(u => ({ username: u.username, favorecidos: u.favorecidos, saldo: u.saldo }));
 }
 
-module.exports = { registerUser, loginUser, getUsers };
+module.exports = { registerUser, loginUser, listUsers, findUserByUsername };

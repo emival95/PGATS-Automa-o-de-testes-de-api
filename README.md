@@ -1,46 +1,61 @@
-# API de Transferências
+# API de Transferências e Usuários
 
-Esta API permite registro, login, consulta de usuários e transferências de valores entre usuários. O banco de dados é em memória, ideal para aprendizado de testes e automação de APIs.
+Esta API permite o registro, login, consulta de usuários e transferências de valores entre usuários. O objetivo é servir de base para estudos de testes e automação de APIs.
+
+## Tecnologias
+- Node.js
+- Express
+- Swagger (documentação)
+- Banco de dados em memória (variáveis)
 
 ## Instalação
 
-1. Clone o repositório.
+1. Clone o repositório:
+   ```sh
+   git clone <repo-url>
+   cd pgats-02-api
+   ```
 2. Instale as dependências:
-   ```bash
-   npm install express swagger-ui-express
+   ```sh
+   npm install express swagger-ui-express bcryptjs
    ```
 
-## Execução
+## Como rodar
 
 - Para iniciar o servidor:
-  ```bash
+  ```sh
   node server.js
   ```
-- Para importar o app em testes:
-  ```js
-  const app = require('./app');
-  ```
+- A API estará disponível em `http://localhost:3000`
+- A documentação Swagger estará em `http://localhost:3000/api-docs`
 
-## Endpoints
+## Endpoints principais
 
-- `POST /register`: Registra novo usuário. Campos obrigatórios: `username`, `password`. Opcional: `favorecidos` (array de usernames).
-- `POST /login`: Realiza login. Campos obrigatórios: `username`, `password`.
-- `GET /users`: Lista todos os usuários.
-- `POST /transfer`: Realiza transferência. Campos: `from`, `to`, `value`.
-- `GET /transfers`: Lista todas as transferências.
-- `GET /api-docs`: Documentação Swagger.
+### Registro de usuário
+- `POST /users/register`
+  - Body: `{ "username": "string", "password": "string", "favorecidos": ["string"] }`
 
-## Regras de Negócio
+### Login
+- `POST /users/login`
+  - Body: `{ "username": "string", "password": "string" }`
 
+### Listar usuários
+- `GET /users`
+
+### Transferências
+- `POST /transfers`
+  - Body: `{ "from": "string", "to": "string", "value": number }`
+- `GET /transfers`
+
+## Regras de negócio
 - Não é permitido registrar usuários duplicados.
-- Login exige usuário e senha válidos.
+- Login exige usuário e senha.
 - Transferências acima de R$ 5.000,00 só podem ser feitas para favorecidos.
-- Saldo inicial de cada usuário: R$ 10.000,00.
+- O saldo inicial de cada usuário é de R$ 10.000,00.
 
 ## Testes
+- O arquivo `app.js` pode ser importado em ferramentas de teste como Supertest.
 
-A API foi estruturada para facilitar testes automatizados com Supertest, importando o `app.js` sem iniciar o servidor.
+---
 
-## Documentação
-
-Acesse `/api-docs` para visualizar e testar os endpoints via Swagger.
+Para dúvidas, consulte a documentação Swagger ou o código-fonte.

@@ -6,53 +6,88 @@ const { expect } = require('chai');
 // Aplicação
 const app = require('../../app');
 
-//mock
-const tranferService = require('../../service/transferService');
+// Mock
+const transferService = require('../../service/transferService');
 
 // Testes
-describe('TransferController', () => {
-    describe('POST /transfer', () => {
+describe('Transfer Controller', () => {
+    describe('POST /transfers', () => {
         it('Quando informo remetente e destinatario inexistentes recebo 400', async () => {
             const resposta = await request(app)
-                .post('/transfer')
+                .post('/transfers')
                 .send({
-                    from:"emival",
-                    to:"valzin",
-                    value:100
-
+                    from: "julio",
+                    to: "priscila",
+                    value: 100
                 });
-             expect(resposta.status).to.equal(400);
-             expect(resposta.body).to.property('error', 'Usuário não encontrado');
-             
+            
+            expect(resposta.status).to.equal(400);
+            expect(resposta.body).to.have.property('error', 'Usuário remetente ou destinatário não encontrado')
         });
-        
 
+        it('Usando Mocks: Quando informo remetente e destinatario inexistentes recebo 400', async () => {
+            // Mocar apenas a função transfer do Service
+            const transferServiceMock = sinon.stub(transferService, 'transfer');
+            transferServiceMock.throws(new Error('Usuário remetente ou destinatário não encontrado'));
 
-         it('Usando Mokcs: Quando informo remetente e destinatario inexistentes recebo 400', async () => {
-           // mocar apenas a função do tranfer service
-           const tranferServiceMock = sinon.stub(tranferService, 'transfer');
-           tranferServiceMock.throws(new Error('Usuário não encontrado'));
             const resposta = await request(app)
-                .post('/transfer')
+                .post('/transfers')
                 .send({
-                    from:"emival",
-                    to:"valzin",
-                    value:100
-
+                    from: "julio",
+                    to: "priscila",
+                    value: 100
                 });
-             expect(resposta.status).to.equal(400);
-             expect(resposta.body).to.property('error', 'Usuário não encontrado');
+            
+            expect(resposta.status).to.equal(400);
+            expect(resposta.body).to.have.property('error', 'Usuário remetente ou destinatário não encontrado')
 
-             // reseto o Mock
-             sinon.restore();
-             
+            // Reseto o Mock
+            sinon.restore();
         });
 
-    })
+        it('Usando Mocks: Quando informo valores válidos eu tenho sucesso com 201 CREATED', async () => {
+            // Preparando os Dados
+                // Carregar o arquivo
+                // Preparar a forma de ignorar os campos dinamicos
 
+            // Mocar apenas a função transfer do Service
+            const transferServiceMock = sinon.stub(transferService, 'transfer');
+            transferServiceMock.returns({ 
+                from: "julio", 
+                to: "priscila", 
+                value: 100, 
+                date: new Date().toISOString() 
+            });
 
+            const resposta = await request(app)
+                .post('/transfers')
+                .send({
+                    from: "julio",
+                    to: "priscila",
+                    value: 100
+                });
+            
+            expect(resposta.status).to.equal(201);
+            // Validação com um fixture
+            const respostaEsperada = require('../fixtures/respostas/quandoInformoValoresValidosEuTenhoSucessoCom201Created.json');
+            delete resposta.body.date;
+            delete respostaEsperada.date; // Ignoro o campo date    
+            expect(resposta.body).to.deep.equal(respostaEsperada);
 
-        
-        
+            console.log(respostaEsperada);
+            // Um expect para comparar a Resposta.body com a String contida no arquivo
+           // expect(resposta.body).to.have.property('from', 'julio');
+            //expect(resposta.body).to.have.property('to', 'priscila');
+            //expect(resposta.body).to.have.property('value', 100);
+
+            
+
+            // Reseto o Mock
+            sinon.restore();
+        });
+    });
+
+    describe('GET /transfers', () => {
+        // Its ficam aqui
+    });
 });
-
